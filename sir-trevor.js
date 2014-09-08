@@ -49,6 +49,7 @@
     uploadUrl: '/attachments',
     baseImageUrl: '/sir-trevor-uploads/',
     errorsContainer: undefined,
+    showBlockControlTitleText: true,
     toMarkdown: {
       aggresiveHTMLStrip: false
     }
@@ -2298,7 +2299,11 @@
       },
   
       render: function() {
-        this.$el.html('<span class="st-icon">'+ _.result(this.block_type, 'icon_name') +'</span>' + _.result(this.block_type, 'title'));
+        var html = '<span class="st-icon">'+ _.result(this.block_type, 'icon_name') +'</span>';
+        if (SirTrevor.DEFAULTS.showBlockControlTitleText) {
+          html = html + _.result(this.block_type, 'title');
+        }
+        this.$el.html(html);
         return this;
       }
     });
