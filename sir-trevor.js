@@ -2302,7 +2302,7 @@
       },
   
       render: function() {
-        var html = '<span class="st-icon">'+ _.result(this.block_type, 'icon_name') +'</span>';
+        var html = '<span class="st-icon"></span>';
         if (SirTrevor.DEFAULTS.showBlockControlTitleText) {
           html = html + _.result(this.block_type, 'title');
         }
