@@ -7,7 +7,7 @@ SirTrevor.Blocks.Heading = SirTrevor.Block.extend({
 
   title: function(){ return i18n.t('blocks:heading:title'); },
 
-  editorHTML: '<div class="st-required st-text-block st-text-block--heading" contenteditable="true"></div>',
+  editorHTML: '<div class="st-required st-text-block st-text-block--heading" contenteditable="true"><h1></h1></div>',
 
   icon_name: 'heading',
 
