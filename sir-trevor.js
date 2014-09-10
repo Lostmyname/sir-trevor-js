@@ -1898,6 +1898,10 @@
   
     loadData: function(data){
       this.getTextBlock().html(SirTrevor.toHTML(data.text, this.type));
+    },
+  
+    onBlockRender: function() {
+      document.execCommand('formatBlock', false, '<h1>');
     }
   });
   /*
