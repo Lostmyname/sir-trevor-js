@@ -1901,8 +1901,7 @@
     },
   
     onBlockRender: function() {
-      alert("hi");
-      document.execCommand('formatBlock', false, '<h1>');
+      // document.execCommand('formatBlock', false, '<h1>');
     }
   });
   /*

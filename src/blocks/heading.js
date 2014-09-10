@@ -16,7 +16,6 @@ SirTrevor.Blocks.Heading = SirTrevor.Block.extend({
   },
 
   onBlockRender: function() {
-    alert("hi");
-    document.execCommand('formatBlock', false, '<h1>');
+    // document.execCommand('formatBlock', false, '<h1>');
   }
 });
