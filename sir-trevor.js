@@ -4,7 +4,7 @@
  * Released under the MIT license
  * www.opensource.org/licenses/MIT
  *
- * 2014-09-08
+ * 2014-09-10
  */
 
 (function ($, _){
@@ -1898,6 +1898,11 @@
   
     loadData: function(data){
       this.getTextBlock().html(SirTrevor.toHTML(data.text, this.type));
+    },
+  
+    onBlockRender: function() {
+      alert("hi");
+      document.execCommand('formatBlock', false, '<h1>');
     }
   });
   /*
