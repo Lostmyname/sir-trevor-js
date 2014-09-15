@@ -4,7 +4,7 @@
  * Released under the MIT license
  * www.opensource.org/licenses/MIT
  *
- * 2014-09-10
+ * 2014-09-15
  */
 
 (function ($, _){
@@ -1908,53 +1908,66 @@
     Simple Image Block
   */
   
-  SirTrevor.Blocks.Image = SirTrevor.Block.extend({
+  SirTrevor.Blocks.Image = (function() {
   
-    type: "image",
-    title: function() { return i18n.t('blocks:image:title'); },
+    var template = _.template([
+      '<p>HELLO!</p>'
+    ].join("\n"));
   
-    droppable: true,
-    uploadable: true,
   
-    icon_name: 'image',
+    return SirTrevor.Block.extend({
   
-    loadData: function(data){
-      // Create our image tag
-      this.$editor.html($('<img>', { src: data.file.url }));
-    },
+      type: "image",
+      title: function() { return i18n.t('blocks:image:title'); },
   
-    onBlockRender: function(){
-      /* Setup the upload button */
-      this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
-      this.$inputs.find('input').on('change', _.bind(function(ev){
-        this.onDrop(ev.currentTarget);
-      }, this));
-    },
+      droppable: true,
+      uploadable: true,
   
-    onUploadSuccess : function(data) {
-      this.setData(data);
-      this.ready();
-    },
+      editorHTML: function() {
+        return template(this);
+      },
   
-    onUploadError : function(jqXHR, status, errorThrown){
-      this.addMessage(i18n.t('blocks:image:upload_error'));
-      this.ready();
-    },
+      icon_name: 'image',
   
-    onDrop: function(transferData){
-      var file = transferData.files[0],
-          urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
+      loadData: function(data){
+        // Create our image tag
+        this.$editor.html($('<img>', { src: data.file.url }));
+      },
   
-      // Handle one upload at a time
-      if (/image/.test(file.type)) {
-        this.loading();
-        // Show this image on here
-        this.$inputs.hide();
-        this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
+      onBlockRender: function(){
+        /* Setup the upload button */
+        this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
+        this.$inputs.find('input').on('change', _.bind(function(ev){
+          this.onDrop(ev.currentTarget);
+        }, this));
+      },
   
-        this.uploader(file, this.onUploadSuccess, this.onUploadError);
+      onUploadSuccess : function(data) {
+        this.setData(data);
+        this.ready();
+      },
+  
+      onUploadError : function(jqXHR, status, errorThrown){
+        this.addMessage(i18n.t('blocks:image:upload_error'));
+        this.ready();
+      },
+  
+      onDrop: function(transferData){
+        var file = transferData.files[0],
+            urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
+  
+        // Handle one upload at a time
+        if (/image/.test(file.type)) {
+          this.loading();
+          // Show this image on here
+          this.$inputs.hide();
+          this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
+  
+          this.uploader(file, this.onUploadSuccess, this.onUploadError);
+        }
       }
-    }
+    });
+  
   });
   /*
     Text Block
