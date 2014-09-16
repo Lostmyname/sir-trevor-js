@@ -44,7 +44,12 @@ SirTrevor.BlockMixins.Resizable = {
       if (size == "small")   { $(obj).css({width: "50%"}); }
       if (size == "medium")  { $(obj).css({width: "75%"}); }
       if (size == "large")   { $(obj).css({width: "100%"}); }
+
+      if (typeof this.resizeHeight === "function") {
+        this.resizeHeight(obj);
+      }
     }
+
   },
 
   setupResizeWidgets: function() {
