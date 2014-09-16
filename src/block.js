@@ -22,6 +22,34 @@ SirTrevor.Block = (function(){
     re_render_on_reorder: false
   };
 
+  var resize_options = {
+    html: [
+      '<div class="st-block__resizezone" style="display:none">',
+        '<span>Size:</span>',
+        '<select class="st-block__resize-size st-resize-size">',
+          '<option value="small">Small</option>',
+          '<option value="medium">Medium</option>',
+          '<option value="large" selected>Large</option>',
+        '</select>',
+      '</div>'
+    ].join("\n"),
+    size: "large"
+  };
+
+  var position_options = {
+    html: [
+      '<div class="st-block__positionzone" style="display:none">',
+        '<span>Position:</span>',
+        '<select class="st-block__position st-position-location">',
+          '<option value="left" selected>Left</option>',
+          '<option value="center">Center</option>',
+          '<option value="right">Right</option>',
+        '</select>',
+      '</div>'
+    ].join("\n"),
+    position: "left"
+  };
+
   var paste_options = {
     html: ['<input type="text" placeholder="<%= i18n.t("general:paste") %>"',
            ' class="st-block__paste-input st-paste-block">'].join('')
@@ -39,7 +67,9 @@ SirTrevor.Block = (function(){
   SirTrevor.DEFAULTS.Block = {
     drop_options: drop_options,
     paste_options: paste_options,
-    upload_options: upload_options
+    upload_options: upload_options,
+    resize_options: resize_options,
+    position_options: position_options
   };
 
   _.extend(Block.prototype, SirTrevor.SimpleBlock.fn, SirTrevor.BlockValidations, {
@@ -70,6 +100,7 @@ SirTrevor.Block = (function(){
     uploadable: false,
     fetchable: false,
     ajaxable: false,
+
 
     drop_options: {},
     paste_options: {},
@@ -112,6 +143,8 @@ SirTrevor.Block = (function(){
       if (this.hasTextBlock) { this._initTextBlocks(); }
       if (this.droppable) { this.withMixin(SirTrevor.BlockMixins.Droppable); }
       if (this.pastable) { this.withMixin(SirTrevor.BlockMixins.Pastable); }
+      if (this.resizable) { this.withMixin(SirTrevor.BlockMixins.Resizable); }
+      if (this.positionable) { this.withMixin(SirTrevor.BlockMixins.Positionable); }
       if (this.uploadable) { this.withMixin(SirTrevor.BlockMixins.Uploadable); }
       if (this.fetchable) { this.withMixin(SirTrevor.BlockMixins.Fetchable); }
       if (this.controllable) { this.withMixin(SirTrevor.BlockMixins.Controllable); }

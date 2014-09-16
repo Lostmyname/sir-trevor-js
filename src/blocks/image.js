@@ -2,160 +2,97 @@
   Simple Image Block
 */
 
-SirTrevor.Blocks.Image = (function() {
+SirTrevor.Blocks.Image = SirTrevor.Block.extend({
 
-  var template = _.template([
-    '<div class="image-size">',
-      '<select>',
-        '<option name="small">Small</option>',
-        '<option name="medium">Medium</option>',
-        '<option name="large">Large</option>',
-      '</select>',
-    '</div>'
-  ].join("\n"));
+  type: "image",
+  title: function() { return i18n.t('blocks:image:title'); },
 
+  droppable: true,
+  uploadable: true,
+  resizable: true,
+  positionable: true,
 
-  return SirTrevor.Block.extend({
+  resize_options: {
+    object: null
+  },
 
-    type: "image",
-    title: function() { return i18n.t('blocks:image:title'); },
+  position_options: {
+    object: null
+  },
 
-    droppable: true,
-    uploadable: true,
+  icon_name: 'image',
 
-    editorHTML: function() {
-      return this.buildDropdowns();
-    },
+  loadData: function(data){
+    // Create our image tag
+    var img = $('<img>', { src: data.file.url });
 
-    icon_name: 'image',
+    if (this.resizable)     { this.resize_options.object = img; this.showResizableInput(); }
+    if (this.positionable)  { this.position_options.object = img; this.showPositionInput(); }
 
-    loadData: function(data){
-      var img = $('<img>', { src: data.file.url });
-      this.$editor.append(img);
+    this.$editor.html(img);
+  },
 
-      this.findInputs();
-      this.sizeSelect.val(data.size);
-      this.positionSelect.val(data.position);
-      this.updateImage();
-    },
+  onBlockRender: function(){
+    /* Setup the upload button */
+    this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
+    this.$inputs.find('input').on('change', _.bind(function(ev){
+      this.onDrop(ev.currentTarget);
+    }, this));
 
-    onBlockRender: function(){
-      /* Setup the upload button */
-      this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
-      this.$inputs.find('input').on('change', _.bind(function(ev){
-        this.onDrop(ev.currentTarget);
-      }, this));
+    if (this.resizable)     { this.setupResizeWidgets(); }
+    if (this.positionable)  { this.setupPositionWidgets(); }
 
-      this.$(".image-options").show();
-      this.bindSelectListeners();
-    },
-
-    onUploadSuccess : function(data) {
-      this.setData(data);
-      this.ready();
-    },
-
-    onUploadError : function(jqXHR, status, errorThrown){
-      this.addMessage(i18n.t('blocks:image:upload_error'));
-      this.ready();
-    },
-
-    onDrop: function(transferData){
-      var file = transferData.files[0],
-          urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
-
-      // Handle one upload at a time
-      if (/image/.test(file.type)) {
-        this.loading();
-        // Show this image on here
-        this.$inputs.hide();
-        this.$editor.append($('<img>', { src: urlAPI.createObjectURL(file) })).show();
-
-        this.uploader(file, this.onUploadSuccess, this.onUploadError);
-      }
-    },
-
-    toData: function() {
-      this.findInputs();
-      var imageData = this.getData();
-      var imageSize = this.sizeSelect.val();
-      var imagePos  = this.positionSelect.val();
-      imageData["size"]     = imageSize;
-      imageData["position"] = imagePos;
-      this.setData(imageData);
-    },
-
-    buildDropdowns: function() {
-      return [
-        '<div class="image-options">',
-          this.buildSizeDropdown(),
-          this.buildPositionDropdown(),
-        '</div>'
-      ].join("\n");
-    },
-
-    buildSizeDropdown: function() {
-      return [
-        '<span>Size:</span>',
-        '<select class="image-size">',
-          '<option value="small">Small</option>',
-          '<option value="medium">Medium</option>',
-          '<option value="large">Large</option>',
-        '</select>',
-      ].join("\n")
-    },
-
-    buildPositionDropdown: function() {
-      return [
-        '<span>Position:</span>',
-        '<select class="image-position" style="margin-bottom: 12px;">',
-          '<option value="left">Left</option>',
-          '<option value="center">Centre</option>',
-          '<option value="right">Right</option>',
-        '</select>',
-      ].join("\n")
-    },
-
-    bindSelectListeners: function() {
-      this.findInputs();
-      var self = this;
-
-      this.sizeSelect.on("change", function() {
-        self.updateImage();
-      });
-
-      this.positionSelect.on("change", function() {
-        self.updateImage();
-      });
-    },
-
-    updateImage: function(options) {
-      this.findInputs();
-      var self = this;
-
-      var css = {float: "none", margin: "0", display: "inherit"};
-
-      var width = this.sizeSelect.val();
-      if (width == "small")  { css.width = "50%"; }
-      if (width == "medium") { css.width = "75%"; }
-      if (width == "large")  { css.width = "100%"; }
-
-      var position = this.positionSelect.val();
-      if (position == "center") {
-        css.margin = "0 auto";
-        css.display = "block";
-      } else if (position == "right") {
-        css.float = "right";
-        this.$el.find("img").after('<div style="clear:both" class="clear-both-image"></div>');
-      }
-
-      this.$el.find("img").css(css);
-    },
-
-    findInputs: function() {
-      this.sizeSelect      = this.$el.find("select.image-size");
-      this.positionSelect  = this.$el.find("select.image-position");
+    if (this.$(".st-block__editor img").length) {
+      this.$(".st-block__dropzone").hide();
+      this.$(".st-block__upload-container").hide();
     }
-  });
+  },
 
-})();
+  onUploadSuccess : function(data) {
+    this.setData(data);
+    this.ready();
+  },
+
+  onUploadError : function(jqXHR, status, errorThrown){
+    this.addMessage(i18n.t('blocks:image:upload_error'));
+    this.ready();
+  },
+
+  toData: function() {
+    var data = this.getData();
+    if (this.resizable)     { data = this.injectSizeData(data); }
+    if (this.positionable)  { data = this.injectPositionData(data); }
+    this.setData(data);
+  },
+
+  onDrop: function(transferData){
+    var file = transferData.files[0],
+        urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
+
+    // Handle one upload at a time
+    if (/image/.test(file.type)) {
+      this.loading();
+      // Show this image on here
+      this.$inputs.hide();
+
+      this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
+
+       if (this.resizable) {
+        this.showResizableInput();
+        this.setResizableInput("large");
+        this.resize_options.object = this.$el.find(".st-block__editor img");
+      }
+
+      if (this.positionable) {
+        this.showPositionInput();
+        this.setPositionInput("left");
+        this.position_options.object = this.$el.find(".st-block__editor img");
+      }
+
+      this.$(".st-block__dropzone").hide();
+      this.$(".st-block__upload-container").hide();
+
+      this.uploader(file, this.onUploadSuccess, this.onUploadError);
+    }
+  }
+});

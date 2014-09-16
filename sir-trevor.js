@@ -4,7 +4,7 @@
  * Released under the MIT license
  * www.opensource.org/licenses/MIT
  *
- * 2014-09-15
+ * 2014-09-16
  */
 
 (function ($, _){
@@ -954,6 +954,140 @@
     }
   
   };
+  /* Adds position functionality to this block */
+  
+  SirTrevor.BlockMixins.Positionable = {
+  
+    mixinName: "Positionable",
+    isDirty: false,
+  
+    initializePositionable: function() {
+      SirTrevor.log("Adding positionable to block " + this.blockID);
+  
+      this.position_options = _.extend({}, SirTrevor.DEFAULTS.Block.position_options, this.position_options);
+  
+      this.$inputs.append(this.position_options.html);
+  
+      this.$('.st-position-location').bind('change', _.bind(this._handleChange, this));
+    },
+  
+    _handleChange: function(e) {
+      this.isDirty = true;
+      var position = this.$(".st-position-location").val();
+      this.resize_options.position = position;
+      this.repositionObject(position);
+  
+      SirTrevor.EventBus.trigger('block:content:positioned', this.blockID);
+    },
+  
+    showPositionInput: function() {
+      this.$inputs.show();
+      this.$inputs.find(".st-block__positionzone").show();
+    },
+  
+    setPositionInput: function(value) {
+      if (typeof value == "undefined") {
+        var data = this.getData();
+        value = data.position;
+      }
+  
+      this.$('.st-position-location').val(value);
+    },
+  
+    repositionObject: function(position) {
+      var obj = this.position_options.object;
+      if (obj != null) {
+        if (position == "left")     { $(obj).css({margin: "0", display: "inherit", float: "none"}); }
+        if (position == "center")   { $(obj).css({margin: "0 auto", display: "block"}); }
+  
+        if (position == "right")    {
+          $(obj).css({float: "right"});
+          $(obj).after('<div style="clear:both"></div>');
+        }
+      }
+    },
+  
+    setupPositionWidgets: function() {
+      this.setPositionInput();
+      var data = this.getData();
+      this.repositionObject(data.position || this.position_options.position);
+    },
+  
+    injectPositionData: function(data) {
+      var val = this.$('.st-position-location').val();
+      if (this.positionable && this.isDirty) {
+        data.position = val;
+      }
+      return data;
+    }
+  
+  
+  };
+  /* Adds resize functionality to this block */
+  
+  SirTrevor.BlockMixins.Resizable = {
+  
+    mixinName: "Resizable",
+    isDirty: false,
+  
+    initializeResizable: function() {
+      SirTrevor.log("Adding resizable to block " + this.blockID);
+  
+      this.resize_options = _.extend({}, SirTrevor.DEFAULTS.Block.resize_options, this.resize_options);
+  
+      this.$inputs.append(this.resize_options.html);
+  
+      this.$('.st-resize-size').bind('change', _.bind(this._handleChange, this));
+    },
+  
+    _handleChange: function(e) {
+      this.isDirty = true;
+      var size = this.$(".st-resize-size").val();
+      this.resize_options.size = size;
+      this.resizeObject(size);
+  
+      SirTrevor.EventBus.trigger('block:content:resized', this.blockID);
+    },
+  
+    showResizableInput: function() {
+      this.$inputs.show();
+      this.$inputs.find(".st-block__resizezone").show();
+    },
+  
+    setResizableInput: function(value) {
+      if (typeof value == "undefined") {
+        var data = this.getData();
+        value = data.size;
+      }
+  
+      this.$inputs.find(".st-block__resizezone select").val(value);
+    },
+  
+    resizeObject: function(size) {
+      var obj = this.resize_options.object;
+      if (obj != null) {
+        if (size == "small")   { $(obj).css({width: "50%"}); }
+        if (size == "medium")  { $(obj).css({width: "75%"}); }
+        if (size == "large")   { $(obj).css({width: "100%"}); }
+      }
+    },
+  
+    setupResizeWidgets: function() {
+      this.setResizableInput();
+      var data = this.getData();
+      this.resizeObject(data.size || this.resize_options.size);
+    },
+  
+    injectSizeData: function(data) {
+      var val = this.$inputs.find(".st-block__resizezone select").val();
+      if (this.resizable && this.isDirty) {
+        data.size = val;
+      }
+      return data;
+    }
+  
+  
+  };
   SirTrevor.BlockMixins.Uploadable = {
   
     mixinName: "Uploadable",
@@ -1446,6 +1580,34 @@
       re_render_on_reorder: false
     };
   
+    var resize_options = {
+      html: [
+        '<div class="st-block__resizezone" style="display:none">',
+          '<span>Size:</span>',
+          '<select class="st-block__resize-size st-resize-size">',
+            '<option value="small">Small</option>',
+            '<option value="medium">Medium</option>',
+            '<option value="large" selected>Large</option>',
+          '</select>',
+        '</div>'
+      ].join("\n"),
+      size: "large"
+    };
+  
+    var position_options = {
+      html: [
+        '<div class="st-block__positionzone" style="display:none">',
+          '<span>Position:</span>',
+          '<select class="st-block__position st-position-location">',
+            '<option value="left" selected>Left</option>',
+            '<option value="center">Center</option>',
+            '<option value="right">Right</option>',
+          '</select>',
+        '</div>'
+      ].join("\n"),
+      position: "left"
+    };
+  
     var paste_options = {
       html: ['<input type="text" placeholder="<%= i18n.t("general:paste") %>"',
              ' class="st-block__paste-input st-paste-block">'].join('')
@@ -1463,7 +1625,9 @@
     SirTrevor.DEFAULTS.Block = {
       drop_options: drop_options,
       paste_options: paste_options,
-      upload_options: upload_options
+      upload_options: upload_options,
+      resize_options: resize_options,
+      position_options: position_options
     };
   
     _.extend(Block.prototype, SirTrevor.SimpleBlock.fn, SirTrevor.BlockValidations, {
@@ -1494,6 +1658,7 @@
       uploadable: false,
       fetchable: false,
       ajaxable: false,
+  
   
       drop_options: {},
       paste_options: {},
@@ -1536,6 +1701,8 @@
         if (this.hasTextBlock) { this._initTextBlocks(); }
         if (this.droppable) { this.withMixin(SirTrevor.BlockMixins.Droppable); }
         if (this.pastable) { this.withMixin(SirTrevor.BlockMixins.Pastable); }
+        if (this.resizable) { this.withMixin(SirTrevor.BlockMixins.Resizable); }
+        if (this.positionable) { this.withMixin(SirTrevor.BlockMixins.Positionable); }
         if (this.uploadable) { this.withMixin(SirTrevor.BlockMixins.Uploadable); }
         if (this.fetchable) { this.withMixin(SirTrevor.BlockMixins.Fetchable); }
         if (this.controllable) { this.withMixin(SirTrevor.BlockMixins.Controllable); }
@@ -1908,163 +2075,100 @@
     Simple Image Block
   */
   
-  SirTrevor.Blocks.Image = (function() {
+  SirTrevor.Blocks.Image = SirTrevor.Block.extend({
   
-    var template = _.template([
-      '<div class="image-size">',
-        '<select>',
-          '<option name="small">Small</option>',
-          '<option name="medium">Medium</option>',
-          '<option name="large">Large</option>',
-        '</select>',
-      '</div>'
-    ].join("\n"));
+    type: "image",
+    title: function() { return i18n.t('blocks:image:title'); },
   
+    droppable: true,
+    uploadable: true,
+    resizable: true,
+    positionable: true,
   
-    return SirTrevor.Block.extend({
+    resize_options: {
+      object: null
+    },
   
-      type: "image",
-      title: function() { return i18n.t('blocks:image:title'); },
+    position_options: {
+      object: null
+    },
   
-      droppable: true,
-      uploadable: true,
+    icon_name: 'image',
   
-      editorHTML: function() {
-        return this.buildDropdowns();
-      },
+    loadData: function(data){
+      // Create our image tag
+      var img = $('<img>', { src: data.file.url });
   
-      icon_name: 'image',
+      if (this.resizable)     { this.resize_options.object = img; this.showResizableInput(); }
+      if (this.positionable)  { this.position_options.object = img; this.showPositionInput(); }
   
-      loadData: function(data){
-        var img = $('<img>', { src: data.file.url });
-        this.$editor.append(img);
+      this.$editor.html(img);
+    },
   
-        this.findInputs();
-        this.sizeSelect.val(data.size);
-        this.positionSelect.val(data.position);
-        this.updateImage();
-      },
+    onBlockRender: function(){
+      /* Setup the upload button */
+      this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
+      this.$inputs.find('input').on('change', _.bind(function(ev){
+        this.onDrop(ev.currentTarget);
+      }, this));
   
-      onBlockRender: function(){
-        /* Setup the upload button */
-        this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
-        this.$inputs.find('input').on('change', _.bind(function(ev){
-          this.onDrop(ev.currentTarget);
-        }, this));
+      if (this.resizable)     { this.setupResizeWidgets(); }
+      if (this.positionable)  { this.setupPositionWidgets(); }
   
-        this.$(".image-options").show();
-        this.bindSelectListeners();
-      },
-  
-      onUploadSuccess : function(data) {
-        this.setData(data);
-        this.ready();
-      },
-  
-      onUploadError : function(jqXHR, status, errorThrown){
-        this.addMessage(i18n.t('blocks:image:upload_error'));
-        this.ready();
-      },
-  
-      onDrop: function(transferData){
-        var file = transferData.files[0],
-            urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
-  
-        // Handle one upload at a time
-        if (/image/.test(file.type)) {
-          this.loading();
-          // Show this image on here
-          this.$inputs.hide();
-          this.$editor.append($('<img>', { src: urlAPI.createObjectURL(file) })).show();
-  
-          this.uploader(file, this.onUploadSuccess, this.onUploadError);
-        }
-      },
-  
-      toData: function() {
-        this.findInputs();
-        var imageData = this.getData();
-        var imageSize = this.sizeSelect.val();
-        var imagePos  = this.positionSelect.val();
-        imageData["size"]     = imageSize;
-        imageData["position"] = imagePos;
-        this.setData(imageData);
-      },
-  
-      buildDropdowns: function() {
-        return [
-          '<div class="image-options">',
-            this.buildSizeDropdown(),
-            this.buildPositionDropdown(),
-          '</div>'
-        ].join("\n");
-      },
-  
-      buildSizeDropdown: function() {
-        return [
-          '<span>Size:</span>',
-          '<select class="image-size">',
-            '<option value="small">Small</option>',
-            '<option value="medium">Medium</option>',
-            '<option value="large">Large</option>',
-          '</select>',
-        ].join("\n")
-      },
-  
-      buildPositionDropdown: function() {
-        return [
-          '<span>Position:</span>',
-          '<select class="image-position" style="margin-bottom: 12px;">',
-            '<option value="left">Left</option>',
-            '<option value="center">Centre</option>',
-            '<option value="right">Right</option>',
-          '</select>',
-        ].join("\n")
-      },
-  
-      bindSelectListeners: function() {
-        this.findInputs();
-        var self = this;
-  
-        this.sizeSelect.on("change", function() {
-          self.updateImage();
-        });
-  
-        this.positionSelect.on("change", function() {
-          self.updateImage();
-        });
-      },
-  
-      updateImage: function(options) {
-        this.findInputs();
-        var self = this;
-  
-        var css = {float: "none", margin: "0", display: "inherit"};
-  
-        var width = this.sizeSelect.val();
-        if (width == "small")  { css.width = "50%"; }
-        if (width == "medium") { css.width = "75%"; }
-        if (width == "large")  { css.width = "100%"; }
-  
-        var position = this.positionSelect.val();
-        if (position == "center") {
-          css.margin = "0 auto";
-          css.display = "block";
-        } else if (position == "right") {
-          css.float = "right";
-          this.$el.find("img").after('<div style="clear:both" class="clear-both-image"></div>');
-        }
-  
-        this.$el.find("img").css(css);
-      },
-  
-      findInputs: function() {
-        this.sizeSelect      = this.$el.find("select.image-size");
-        this.positionSelect  = this.$el.find("select.image-position");
+      if (this.$(".st-block__editor img").length) {
+        this.$(".st-block__dropzone").hide();
+        this.$(".st-block__upload-container").hide();
       }
-    });
+    },
   
-  })();
+    onUploadSuccess : function(data) {
+      this.setData(data);
+      this.ready();
+    },
+  
+    onUploadError : function(jqXHR, status, errorThrown){
+      this.addMessage(i18n.t('blocks:image:upload_error'));
+      this.ready();
+    },
+  
+    toData: function() {
+      var data = this.getData();
+      if (this.resizable)     { data = this.injectSizeData(data); }
+      if (this.positionable)  { data = this.injectPositionData(data); }
+      this.setData(data);
+    },
+  
+    onDrop: function(transferData){
+      var file = transferData.files[0],
+          urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
+  
+      // Handle one upload at a time
+      if (/image/.test(file.type)) {
+        this.loading();
+        // Show this image on here
+        this.$inputs.hide();
+  
+        this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
+  
+         if (this.resizable) {
+          this.showResizableInput();
+          this.setResizableInput("large");
+          this.resize_options.object = this.$el.find(".st-block__editor img");
+        }
+  
+        if (this.positionable) {
+          this.showPositionInput();
+          this.setPositionInput("left");
+          this.position_options.object = this.$el.find(".st-block__editor img");
+        }
+  
+        this.$(".st-block__dropzone").hide();
+        this.$(".st-block__upload-container").hide();
+  
+        this.uploader(file, this.onUploadSuccess, this.onUploadError);
+      }
+    }
+  });
   /*
     Text Block
   */
