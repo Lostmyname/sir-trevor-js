@@ -30,6 +30,7 @@ SirTrevor.Block = (function(){
           '<option value="small">Small</option>',
           '<option value="medium">Medium</option>',
           '<option value="large" selected>Large</option>',
+          '<option value="hero">Hero</option>',
         '</select>',
       '</div>'
     ].join("\n"),

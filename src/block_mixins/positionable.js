@@ -18,7 +18,7 @@ SirTrevor.BlockMixins.Positionable = {
   _handleChange: function(e) {
     this.isDirty = true;
     var position = this.$(".st-position-location").val();
-    this.resize_options.position = position;
+    this.position_options.position = position;
     this.repositionObject(position);
 
     SirTrevor.EventBus.trigger('block:content:positioned', this.blockID);
@@ -32,7 +32,7 @@ SirTrevor.BlockMixins.Positionable = {
   setPositionInput: function(value) {
     if (typeof value == "undefined") {
       var data = this.getData();
-      value = data.position;
+      value = data.position || "left";
     }
 
     this.$('.st-position-location').val(value);
@@ -41,11 +41,13 @@ SirTrevor.BlockMixins.Positionable = {
   repositionObject: function(position) {
     var obj = this.position_options.object;
     if (obj != null) {
-      if (position == "left")     { $(obj).css({margin: "0", display: "inherit", float: "none"}); }
-      if (position == "center")   { $(obj).css({margin: "0 auto", display: "block"}); }
+      var $obj = $(obj);
+      $obj.removeClass("yeti-position-left yeti-position-center yeti-position-right");
+      if (position == "left")   { $obj.addClass("yeti-position-left"); }
+      if (position == "center") { $obj.addClass("yeti-position-center"); }
+      if (position == "right")  { $obj.addClass("yeti-position-right"); }
 
       if (position == "right")    {
-        $(obj).css({float: "right"});
         $(obj).after('<div style="clear:both"></div>');
       }
     }

@@ -32,7 +32,7 @@ SirTrevor.BlockMixins.Resizable = {
   setResizableInput: function(value) {
     if (typeof value == "undefined") {
       var data = this.getData();
-      value = data.size;
+      value = data.size || "large";
     }
 
     this.$inputs.find(".st-block__resizezone select").val(value);
@@ -41,15 +41,18 @@ SirTrevor.BlockMixins.Resizable = {
   resizeObject: function(size) {
     var obj = this.resize_options.object;
     if (obj != null) {
-      if (size == "small")   { $(obj).css({width: "50%"}); }
-      if (size == "medium")  { $(obj).css({width: "75%"}); }
-      if (size == "large")   { $(obj).css({width: "100%"}); }
+      var $obj = $(obj);
+      var type = $obj.attr("data-object-type")
+      $obj.removeClass("yeti-"+type+"-small yeti-"+type+"-medium yeti-"+type+"-large yeti-"+type+"-hero");
+      if (size == "small")   { $obj.addClass("yeti-"+type+"-small"); }
+      if (size == "medium")  { $obj.addClass("yeti-"+type+"-medium"); }
+      if (size == "large")   { $obj.addClass("yeti-"+type+"-large"); }
+      if (size == "hero")    { $obj.addClass("yeti-"+type+"-hero"); }
 
       if (typeof this.resizeHeight === "function") {
         this.resizeHeight(obj);
       }
     }
-
   },
 
   setupResizeWidgets: function() {

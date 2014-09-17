@@ -4,7 +4,7 @@
  * Released under the MIT license
  * www.opensource.org/licenses/MIT
  *
- * 2014-09-16
+ * 2014-09-17
  */
 
 (function ($, _){
@@ -974,7 +974,7 @@
     _handleChange: function(e) {
       this.isDirty = true;
       var position = this.$(".st-position-location").val();
-      this.resize_options.position = position;
+      this.position_options.position = position;
       this.repositionObject(position);
   
       SirTrevor.EventBus.trigger('block:content:positioned', this.blockID);
@@ -988,7 +988,7 @@
     setPositionInput: function(value) {
       if (typeof value == "undefined") {
         var data = this.getData();
-        value = data.position;
+        value = data.position || "left";
       }
   
       this.$('.st-position-location').val(value);
@@ -997,11 +997,13 @@
     repositionObject: function(position) {
       var obj = this.position_options.object;
       if (obj != null) {
-        if (position == "left")     { $(obj).css({margin: "0", display: "inherit", float: "none"}); }
-        if (position == "center")   { $(obj).css({margin: "0 auto", display: "block"}); }
+        var $obj = $(obj);
+        $obj.removeClass("yeti-position-left yeti-position-center yeti-position-right");
+        if (position == "left")   { $obj.addClass("yeti-position-left"); }
+        if (position == "center") { $obj.addClass("yeti-position-center"); }
+        if (position == "right")  { $obj.addClass("yeti-position-right"); }
   
         if (position == "right")    {
-          $(obj).css({float: "right"});
           $(obj).after('<div style="clear:both"></div>');
         }
       }
@@ -1057,7 +1059,7 @@
     setResizableInput: function(value) {
       if (typeof value == "undefined") {
         var data = this.getData();
-        value = data.size;
+        value = data.size || "large";
       }
   
       this.$inputs.find(".st-block__resizezone select").val(value);
@@ -1066,15 +1068,18 @@
     resizeObject: function(size) {
       var obj = this.resize_options.object;
       if (obj != null) {
-        if (size == "small")   { $(obj).css({width: "50%"}); }
-        if (size == "medium")  { $(obj).css({width: "75%"}); }
-        if (size == "large")   { $(obj).css({width: "100%"}); }
+        var $obj = $(obj);
+        var type = $obj.attr("data-object-type")
+        $obj.removeClass("yeti-"+type+"-small yeti-"+type+"-medium yeti-"+type+"-large yeti-"+type+"-hero");
+        if (size == "small")   { $obj.addClass("yeti-"+type+"-small"); }
+        if (size == "medium")  { $obj.addClass("yeti-"+type+"-medium"); }
+        if (size == "large")   { $obj.addClass("yeti-"+type+"-large"); }
+        if (size == "hero")    { $obj.addClass("yeti-"+type+"-hero"); }
   
         if (typeof this.resizeHeight === "function") {
           this.resizeHeight(obj);
         }
       }
-  
     },
   
     setupResizeWidgets: function() {
@@ -1593,6 +1598,7 @@
             '<option value="small">Small</option>',
             '<option value="medium">Medium</option>',
             '<option value="large" selected>Large</option>',
+            '<option value="hero">Hero</option>',
           '</select>',
         '</div>'
       ].join("\n"),
@@ -2102,7 +2108,7 @@
   
     loadData: function(data){
       // Create our image tag
-      var img = $('<img>', { src: data.file.url });
+      var img = $('<img>', { src: data.file.url }).attr("data-object-type", "image");
   
       if (this.resizable)     { this.resize_options.object = img; this.showResizableInput(); }
       if (this.positionable)  { this.position_options.object = img; this.showPositionInput(); }
@@ -2153,7 +2159,7 @@
         // Show this image on here
         this.$inputs.hide();
   
-        this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
+        this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) }).attr("data-object-type", "image")).show();
   
          if (this.resizable) {
           this.showResizableInput();
@@ -2181,6 +2187,8 @@
   
     type: "text",
   
+    positionable: true,
+  
     title: function() { return i18n.t('blocks:text:title'); },
   
     editorHTML: '<div class="st-required st-text-block" contenteditable="true"></div>',
@@ -2189,6 +2197,29 @@
   
     loadData: function(data){
       this.getTextBlock().html(SirTrevor.toHTML(data.text, this.type));
+    },
+  
+    toData: function() {
+      var data = this.getData();
+      data.text = this.getTextBlock().text();
+      if (this.positionable)  { data = this.injectPositionData(data); }
+      this.setData(data);
+    },
+  
+    beforeBlockRender: function() {
+      this.$inputs = this.$el;
+    },
+  
+    onBlockRender: function() {
+      if (SirTrevor.getInstance().blocks.length == 1 && this.$editor.text() == "") {
+        this.$editor.text("...and at the end Pedro will draw a picture of it!");
+        this.$editor.focus();
+      }
+  
+      this.setupPositionWidgets();
+      this.showPositionInput();
+      this.position_options.object = this.getTextBlock();
+      this.repositionObject(this.$('.st-position-location').val());
     }
   });
   SirTrevor.Blocks.Tweet = (function(){

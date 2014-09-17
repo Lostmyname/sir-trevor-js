@@ -24,7 +24,7 @@ SirTrevor.Blocks.Image = SirTrevor.Block.extend({
 
   loadData: function(data){
     // Create our image tag
-    var img = $('<img>', { src: data.file.url });
+    var img = $('<img>', { src: data.file.url }).attr("data-object-type", "image");
 
     if (this.resizable)     { this.resize_options.object = img; this.showResizableInput(); }
     if (this.positionable)  { this.position_options.object = img; this.showPositionInput(); }
@@ -75,7 +75,7 @@ SirTrevor.Blocks.Image = SirTrevor.Block.extend({
       // Show this image on here
       this.$inputs.hide();
 
-      this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
+      this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) }).attr("data-object-type", "image")).show();
 
        if (this.resizable) {
         this.showResizableInput();
