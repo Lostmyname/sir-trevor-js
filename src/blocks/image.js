@@ -85,9 +85,12 @@ SirTrevor.Blocks.Image = SirTrevor.Block.extend({
 
       if (this.positionable) {
         this.showPositionInput();
-        this.setPositionInput("left");
+        this.setPositionInput("center");
         this.position_options.object = this.$el.find(".st-block__editor img");
       }
+
+      this.resizeObject(this.getCurrentSelectedSize());
+      this.repositionObject(this.getCurrentSelectedPosition());
 
       this.$(".st-block__dropzone").hide();
       this.$(".st-block__upload-container").hide();

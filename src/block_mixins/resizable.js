@@ -38,6 +38,10 @@ SirTrevor.BlockMixins.Resizable = {
     this.$inputs.find(".st-block__resizezone select").val(value);
   },
 
+  getCurrentSelectedSize: function() {
+    return this.$inputs.find(".st-block__resizezone select").val();
+  },
+
   resizeObject: function(size) {
     var obj = this.resize_options.object;
     if (obj != null) {
@@ -62,7 +66,7 @@ SirTrevor.BlockMixins.Resizable = {
   },
 
   injectSizeData: function(data) {
-    var val = this.$inputs.find(".st-block__resizezone select").val();
+    var val = this.getCurrentSelectedSize();
     if (this.resizable && this.isDirty) {
       data.size = val;
     }

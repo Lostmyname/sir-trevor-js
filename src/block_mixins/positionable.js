@@ -17,11 +17,15 @@ SirTrevor.BlockMixins.Positionable = {
 
   _handleChange: function(e) {
     this.isDirty = true;
-    var position = this.$(".st-position-location").val();
+    var position = this.getCurrentSelectedPosition();
     this.position_options.position = position;
     this.repositionObject(position);
 
     SirTrevor.EventBus.trigger('block:content:positioned', this.blockID);
+  },
+
+  getCurrentSelectedPosition: function() {
+    return this.$(".st-position-location").val();
   },
 
   showPositionInput: function() {
@@ -39,6 +43,7 @@ SirTrevor.BlockMixins.Positionable = {
   },
 
   repositionObject: function(position) {
+    // debugger
     var obj = this.position_options.object;
     if (obj != null) {
       var $obj = $(obj);

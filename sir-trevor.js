@@ -973,11 +973,15 @@
   
     _handleChange: function(e) {
       this.isDirty = true;
-      var position = this.$(".st-position-location").val();
+      var position = this.getCurrentSelectedPosition();
       this.position_options.position = position;
       this.repositionObject(position);
   
       SirTrevor.EventBus.trigger('block:content:positioned', this.blockID);
+    },
+  
+    getCurrentSelectedPosition: function() {
+      return this.$(".st-position-location").val();
     },
   
     showPositionInput: function() {
@@ -995,6 +999,7 @@
     },
   
     repositionObject: function(position) {
+      // debugger
       var obj = this.position_options.object;
       if (obj != null) {
         var $obj = $(obj);
@@ -1065,6 +1070,10 @@
       this.$inputs.find(".st-block__resizezone select").val(value);
     },
   
+    getCurrentSelectedSize: function() {
+      return this.$inputs.find(".st-block__resizezone select").val();
+    },
+  
     resizeObject: function(size) {
       var obj = this.resize_options.object;
       if (obj != null) {
@@ -1089,7 +1098,7 @@
     },
   
     injectSizeData: function(data) {
-      var val = this.$inputs.find(".st-block__resizezone select").val();
+      var val = this.getCurrentSelectedSize();
       if (this.resizable && this.isDirty) {
         data.size = val;
       }
@@ -2169,9 +2178,12 @@
   
         if (this.positionable) {
           this.showPositionInput();
-          this.setPositionInput("left");
+          this.setPositionInput("center");
           this.position_options.object = this.$el.find(".st-block__editor img");
         }
+  
+        this.resizeObject(this.getCurrentSelectedSize());
+        this.repositionObject(this.getCurrentSelectedPosition());
   
         this.$(".st-block__dropzone").hide();
         this.$(".st-block__upload-container").hide();
