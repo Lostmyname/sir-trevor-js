@@ -2298,7 +2298,15 @@
       },
   
       render: function() {
-        this.$el.html('<span class="st-icon">'+ _.result(this.block_type, 'icon_name') +'</span>' + _.result(this.block_type, 'title'));
+        var html = '<span class="st-icon">';
+        if (SirTrevor.DEFAULTS.showBlockControlTitleText) {
+          html += _.result(this.block_type, 'icon_name');
+        }
+        html += '</span>';
+        html += _.result(this.block_type, 'title');
+        this.$el.html(html);
+  
+        // this.$el.html('<span class="st-icon">'+ _.result(this.block_type, 'icon_name') +'</span>' + _.result(this.block_type, 'title'));
         return this;
       }
     });
