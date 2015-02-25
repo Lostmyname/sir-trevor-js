@@ -1,8 +1,9 @@
-/*
-  Simple Image Block
-*/
+"use strict";
 
-SirTrevor.Blocks.Image = SirTrevor.Block.extend({
+var $ = require('jquery');
+var Block = require('../block');
+
+module.exports = Block.extend({
 
   type: "image",
   title: function() { return i18n.t('blocks:image:title'); },
@@ -20,19 +21,9 @@ SirTrevor.Blocks.Image = SirTrevor.Block.extend({
   onBlockRender: function(){
     /* Setup the upload button */
     this.$inputs.find('button').bind('click', function(ev){ ev.preventDefault(); });
-    this.$inputs.find('input').on('change', _.bind(function(ev){
+    this.$inputs.find('input').on('change', (function(ev) {
       this.onDrop(ev.currentTarget);
-    }, this));
-  },
-
-  onUploadSuccess : function(data) {
-    this.setData(data);
-    this.ready();
-  },
-
-  onUploadError : function(jqXHR, status, errorThrown){
-    this.addMessage(i18n.t('blocks:image:upload_error'));
-    this.ready();
+    }).bind(this));
   },
 
   onDrop: function(transferData){
@@ -46,7 +37,17 @@ SirTrevor.Blocks.Image = SirTrevor.Block.extend({
       this.$inputs.hide();
       this.$editor.html($('<img>', { src: urlAPI.createObjectURL(file) })).show();
 
-      this.uploader(file, this.onUploadSuccess, this.onUploadError);
+      this.uploader(
+        file,
+        function(data) {
+          this.setData(data);
+          this.ready();
+        },
+        function(error) {
+          this.addMessage(i18n.t('blocks:image:upload_error'));
+          this.ready();
+        }
+      );
     }
   }
 });

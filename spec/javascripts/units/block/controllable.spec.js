@@ -1,3 +1,5 @@
+"use strict";
+
 describe("Controllable Block", function(){
 
   var element, editor, block, testHandler;
@@ -15,14 +17,14 @@ describe("Controllable Block", function(){
       }
     });
 
-    block = new SirTrevor.Blocks.ControllableBlock({}, editor.ID);
+    block = new SirTrevor.Blocks.ControllableBlock({}, editor.ID, editor.mediator);
   });
 
   describe("render", function(){
 
     beforeEach(function(){
-      spyOn(block, 'withMixin').andCallThrough();
-      block = block.render();
+      spyOn(block, 'withMixin').and.callThrough();
+      block.render();
     });
 
     it("gets the controllable mixin", function(){

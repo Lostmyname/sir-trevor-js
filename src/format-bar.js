@@ -1,106 +1,120 @@
-/*
-  Format Bar
-  --
-  Displayed on focus on a text area.
-  Renders with all available options for the editor instance
-*/
+"use strict";
 
-SirTrevor.FormatBar = (function(){
+/**
+ * Format Bar
+ * --
+ * Displayed on focus on a text area.
+ * Renders with all available options for the editor instance
+ */
 
-  var FormatBar = function(options) {
-    this.options = _.extend({}, SirTrevor.DEFAULTS.formatBar, options || {});
-    this._ensureElement();
-    this._bindFunctions();
+var _ = require('./lodash');
+var $ = require('jquery');
 
-    this.initialize.apply(this, arguments);
-  };
+var config = require('./config');
+var utils = require('./utils');
 
-  _.extend(FormatBar.prototype, FunctionBind, SirTrevor.Events, Renderable, {
+var FormatBar = function(options, mediator) {
+  this.options = Object.assign({}, config.defaults.formatBar, options || {});
+  this.commands = this.options.commands;
+  this.mediator = mediator;
 
-    className: 'st-format-bar',
+  this._ensureElement();
+  this._bindFunctions();
+  this._bindMediatedEvents();
 
-    bound: ["onFormatButtonClick", "renderBySelection", "hide"],
+  this.initialize.apply(this, arguments);
+};
 
-    initialize: function() {
-      var formatName, format, btn;
-      this.$btns = [];
+Object.assign(FormatBar.prototype, require('./function-bind'), require('./mediated-events'), require('./events'), require('./renderable'), {
 
-      for (formatName in SirTrevor.Formatters) {
-        if (SirTrevor.Formatters.hasOwnProperty(formatName)) {
-          format = SirTrevor.Formatters[formatName];
-          btn = $("<button>", {
-                  'class': 'st-format-btn st-format-btn--' + formatName + ' ' + (format.iconName ? 'st-icon' : ''),
-                  'text': format.text,
-                  'data-type': formatName,
-                  'data-cmd': format.cmd
-                });
+  className: 'st-format-bar',
 
-          this.$btns.push(btn);
-          btn.appendTo(this.$el);
-        }
-      }
+  bound: ["onFormatButtonClick", "renderBySelection", "hide"],
 
-      this.$b = $(document);
-      this.$el.bind('click', '.st-format-btn', this.onFormatButtonClick);
-    },
+  eventNamespace: 'formatter',
 
-    hide: function() {
-      this.$el.removeClass('st-format-bar--is-ready');
-    },
+  mediatedEvents: {
+    'position': 'renderBySelection',
+    'show': 'show',
+    'hide': 'hide'
+  },
 
-    show: function() {
-      this.$el.addClass('st-format-bar--is-ready');
-    },
+  initialize: function() {
+    this.$btns = [];
 
-    remove: function(){ this.$el.remove(); },
+    this.commands.forEach(function(format) {
+      var btn = $("<button>", {
+        'class': 'st-format-btn st-format-btn--' + format.name + ' ' +
+          (format.iconName ? 'st-icon' : ''),
+        'text': format.text,
+        'data-cmd': format.cmd
+      });
 
-    renderBySelection: function(rectangles) {
+      this.$btns.push(btn);
+      btn.appendTo(this.$el);
+    }, this);
 
-      var selection = window.getSelection(),
-          range = selection.getRangeAt(0),
-          boundary = range.getBoundingClientRect(),
-          coords = {};
+    this.$b = $(document);
+    this.$el.bind('click', '.st-format-btn', this.onFormatButtonClick);
+  },
 
-      coords.top = boundary.top + 20 + window.pageYOffset - this.$el.height() + 'px';
-      coords.left = ((boundary.left + boundary.right) / 2) - (this.$el.width() / 2) + 'px';
+  hide: function() {
+    this.$el.removeClass('st-format-bar--is-ready');
+  },
 
-      this.highlightSelectedButtons();
-      this.show();
+  show: function() {
+    this.$el.addClass('st-format-bar--is-ready');
+  },
 
-      this.$el.css(coords);
-    },
+  remove: function(){ this.$el.remove(); },
 
-    highlightSelectedButtons: function() {
-      var formatter;
-      _.each(this.$btns, function($btn) {
-        formatter = SirTrevor.Formatters[$btn.attr('data-type')];
-        $btn.toggleClass("st-format-btn--is-active",
-                         formatter.isActive());
-      }, this);
-    },
+  renderBySelection: function() {
 
-    onFormatButtonClick: function(ev){
-      ev.stopPropagation();
+    var selection = window.getSelection(),
+    range = selection.getRangeAt(0),
+    boundary = range.getBoundingClientRect(),
+    coords = {};
 
-      var btn = $(ev.target),
-          format = SirTrevor.Formatters[btn.attr('data-type')];
+    coords.top = boundary.top + 20 + window.pageYOffset - this.$el.height() + 'px';
+    coords.left = ((boundary.left + boundary.right) / 2) - (this.$el.width() / 2) + 'px';
 
-      if (_.isUndefined(format)) return false;
+    this.highlightSelectedButtons();
+    this.show();
 
-      // Do we have a click function defined on this formatter?
-      if(!_.isUndefined(format.onClick) && _.isFunction(format.onClick)) {
-        format.onClick(); // Delegate
-      } else {
-        // Call default
-        document.execCommand(btn.attr('data-cmd'), false, format.param);
-      }
+    this.$el.css(coords);
+  },
 
-      this.highlightSelectedButtons();
+  highlightSelectedButtons: function() {
+    var block = utils.getBlockBySelection();
+    this.$btns.forEach(function(btn) {
+      var cmd = $(btn).data('cmd');
+      btn.toggleClass("st-format-btn--is-active",
+                      block.queryTextBlockCommandState(cmd));
+    }, this);
+  },
+
+  onFormatButtonClick: function(ev){
+    ev.stopPropagation();
+
+    var block = utils.getBlockBySelection();
+    if (_.isUndefined(block)) {
+      throw "Associated block not found";
+    }
+
+    var btn = $(ev.target),
+        cmd = btn.data('cmd');
+
+    if (_.isUndefined(cmd)) {
       return false;
     }
 
-  });
+    block.execTextBlockCommand(cmd);
 
-  return FormatBar;
+    this.highlightSelectedButtons();
 
-})();
+    return false;
+  }
+
+});
+
+module.exports = FormatBar;

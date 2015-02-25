@@ -1,4 +1,10 @@
-SirTrevor.Locales = {
+"use strict";
+
+var _ = require('./lodash');
+var config = require('./config');
+var utils = require('./utils');
+
+var Locales = {
   en: {
     general: {
       'delete':           'Delete?',
@@ -52,14 +58,14 @@ SirTrevor.Locales = {
   }
 };
 
-if (window.i18n === undefined || window.i18n.init === undefined) {
+if (window.i18n === undefined) {
   // Minimal i18n stub that only reads the English strings
-  SirTrevor.log("Using i18n stub");
+  utils.log("Using i18n stub");
   window.i18n = {
     t: function(key, options) {
       var parts = key.split(':'), str, obj, part, i;
 
-      obj = SirTrevor.Locales[SirTrevor.LANGUAGE];
+      obj = Locales[config.language];
 
       for(i = 0; i < parts.length; i++) {
         part = parts[i];
@@ -74,8 +80,8 @@ if (window.i18n === undefined || window.i18n.init === undefined) {
       if (!_.isString(str)) { return ""; }
 
       if (str.indexOf('__') >= 0) {
-        _.each(options, function(value, opt) {
-          str = str.replace('__' + opt + '__', value);
+        Object.keys(options).forEach(function(opt) {
+          str = str.replace('__' + opt + '__', options[opt]);
         });
       }
 
@@ -83,10 +89,12 @@ if (window.i18n === undefined || window.i18n.init === undefined) {
     }
   };
 } else {
-  SirTrevor.log("Using i18next");
+  utils.log("Using i18next");
   // Only use i18next when the library has been loaded by the user, keeps
   // dependencies slim
-  i18n.init({ resStore: SirTrevor.Locales, fallbackLng: SirTrevor.LANGUAGE,
-              ns: { namespaces: ['general', 'blocks'], defaultNs: 'general' }
+  i18n.init({ resStore: Locales, fallbackLng: config.language,
+            ns: { namespaces: ['general', 'blocks'], defaultNs: 'general' }
   });
 }
+
+module.exports = Locales;

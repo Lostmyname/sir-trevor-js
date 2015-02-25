@@ -1,4 +1,6 @@
-describe("Uploadable Block", function(){
+"use strict";
+
+describe("Block:Uploadable Block", function(){
 
   var element, editor, block;
 
@@ -10,13 +12,13 @@ describe("Uploadable Block", function(){
       uploadable: true
     });
 
-    block = new SirTrevor.Blocks.UploadableBlock({}, editor.ID);
+    block = new SirTrevor.Blocks.UploadableBlock({}, editor.ID, editor.mediator);
   });
 
   describe("render", function(){
 
     beforeEach(function(){
-      spyOn(block, 'withMixin').andCallThrough();
+      spyOn(block, 'withMixin').and.callThrough();
 
       block = block.render();
     });

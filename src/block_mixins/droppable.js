@@ -1,17 +1,26 @@
+"use strict";
+
 /* Adds drop functionaltiy to this block */
 
-SirTrevor.BlockMixins.Droppable = {
+var _ = require('../lodash');
+var $ = require('jquery');
+var config = require('../config');
+var utils = require('../utils');
+
+var EventBus = require('../event-bus');
+
+module.exports = {
 
   mixinName: "Droppable",
   valid_drop_file_types: ['File', 'Files', 'text/plain', 'text/uri-list'],
 
   initializeDroppable: function() {
-    SirTrevor.log("Adding droppable to block " + this.blockID);
+    utils.log("Adding droppable to block " + this.blockID);
 
-    this.drop_options = _.extend({}, SirTrevor.DEFAULTS.Block.drop_options, this.drop_options);
+    this.drop_options = Object.assign({}, config.defaults.Block.drop_options, this.drop_options);
 
     var drop_html = $(_.template(this.drop_options.html,
-                      { block: this }));
+                                 { block: this, _: _ }));
 
     this.$editor.hide();
     this.$inputs.append(drop_html);
@@ -19,7 +28,7 @@ SirTrevor.BlockMixins.Droppable = {
 
     // Bind our drop event
     this.$dropzone.dropArea()
-                  .bind('drop', _.bind(this._handleDrop, this));
+                  .bind('drop', this._handleDrop.bind(this));
 
     this.$inner.addClass('st-block__inner--droppable');
   },
@@ -30,8 +39,7 @@ SirTrevor.BlockMixins.Droppable = {
     e = e.originalEvent;
 
     var el = $(e.target),
-        types = e.dataTransfer.types,
-        type, data = [];
+        types = e.dataTransfer.types;
 
     el.removeClass('st-dropzone--dragover');
 
@@ -40,12 +48,14 @@ SirTrevor.BlockMixins.Droppable = {
       delegate it away to our blockTypes to process
     */
 
-    if (!_.isUndefined(types) &&
-      _.some(types, function(type){ return _.include(this.valid_drop_file_types, type); }, this)) {
+    if (types &&
+        types.some(function(type) {
+                     return this.valid_drop_file_types.includes(type);
+                   }, this)) {
       this.onDrop(e.dataTransfer);
     }
 
-    SirTrevor.EventBus.trigger('block:content:dropped', this.blockID);
+    EventBus.trigger('block:content:dropped', this.blockID);
   }
 
 };

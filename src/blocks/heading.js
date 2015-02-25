@@ -1,9 +1,15 @@
+"use strict";
+
 /*
   Heading Block
 */
-SirTrevor.Blocks.Heading = SirTrevor.Block.extend({
 
-  type: 'heading',
+var Block = require('../block');
+var stToHTML = require('../to-html');
+
+module.exports = Block.extend({
+
+  type: 'Heading',
 
   title: function(){ return i18n.t('blocks:heading:title'); },
 
@@ -12,6 +18,6 @@ SirTrevor.Blocks.Heading = SirTrevor.Block.extend({
   icon_name: 'heading',
 
   loadData: function(data){
-    this.getTextBlock().html(SirTrevor.toHTML(data.text, this.type));
+    this.getTextBlock().html(stToHTML(data.text, this.type));
   }
 });

@@ -1,63 +1,92 @@
+"use strict";
+
 /*
-  SirTrevor Block Controls
-  --
-  Gives an interface for adding new Sir Trevor blocks.
-*/
+ * SirTrevor Block Controls
+ * --
+ * Gives an interface for adding new Sir Trevor blocks.
+ */
 
-SirTrevor.BlockControls = (function(){
+var _ = require('./lodash');
+var $ = require('jquery');
 
-  var BlockControls = function(available_types, instance_scope) {
-    this.instance_scope = instance_scope;
-    this.available_types = available_types || [];
-    this._ensureElement();
-    this._bindFunctions();
-    this.initialize();
-  };
+var Blocks = require('./blocks');
+var BlockControl = require('./block-control');
+var EventBus = require('./event-bus');
 
-  _.extend(BlockControls.prototype, FunctionBind, Renderable, SirTrevor.Events, {
+var BlockControls = function(available_types, mediator) {
+  this.available_types = available_types || [];
+  this.mediator = mediator;
 
-    bound: ['handleControlButtonClick'],
-    block_controls: null,
+  this._ensureElement();
+  this._bindFunctions();
+  this._bindMediatedEvents();
 
-    className: "st-block-controls",
+  this.initialize();
+};
 
-    html: "<a class='st-icon st-icon--close'>" + i18n.t("general:close") + "</a>",
+Object.assign(BlockControls.prototype, require('./function-bind'), require('./mediated-events'), require('./renderable'), require('./events'), {
 
-    initialize: function() {
-      for(var block_type in this.available_types) {
-        if (SirTrevor.Blocks.hasOwnProperty(block_type)) {
-          var block_control = new SirTrevor.BlockControl(block_type, this.instance_scope);
-          if (block_control.can_be_rendered) {
-            this.$el.append(block_control.render().$el);
-          }
+  bound: ['handleControlButtonClick'],
+  block_controls: null,
+
+  className: "st-block-controls",
+  eventNamespace: 'block-controls',
+
+  mediatedEvents: {
+    'render': 'renderInContainer',
+    'show': 'show',
+    'hide': 'hide'
+  },
+
+  initialize: function() {
+    for(var block_type in this.available_types) {
+      if (Blocks.hasOwnProperty(block_type)) {
+        var block_control = new BlockControl(block_type);
+        if (block_control.can_be_rendered) {
+          this.$el.append(block_control.render().$el);
         }
       }
-
-      this.$el.delegate('.st-block-control', 'click', this.handleControlButtonClick);
-    },
-
-    show: function() {
-      this.$el.addClass('st-block-controls--active');
-
-      SirTrevor.EventBus.trigger('block:controls:shown');
-    },
-
-    hide: function() {
-      this.$el.removeClass('st-block-controls--active');
-
-      SirTrevor.EventBus.trigger('block:controls:hidden');
-    },
-
-    handleControlButtonClick: function(e) {
-      e.stopPropagation();
-
-      this.trigger('createBlock', $(e.currentTarget).attr('data-type'));
     }
 
-  });
+    this.$el.delegate('.st-block-control', 'click', this.handleControlButtonClick);
+    this.mediator.on('block-controls:show', this.renderInContainer);
+  },
 
-  return BlockControls;
+  show: function() {
+    this.$el.addClass('st-block-controls--active');
 
-})();
+    EventBus.trigger('block:controls:shown');
+  },
 
+  hide: function() {
+    this.removeCurrentContainer();
+    this.$el.removeClass('st-block-controls--active');
 
+    EventBus.trigger('block:controls:hidden');
+  },
+
+  handleControlButtonClick: function(e) {
+    e.stopPropagation();
+
+    this.mediator.trigger('block:create', $(e.currentTarget).attr('data-type'));
+  },
+
+  renderInContainer: function(container) {
+    this.removeCurrentContainer();
+
+    container.append(this.$el.detach());
+    container.addClass('with-st-controls');
+
+    this.currentContainer = container;
+    this.show();
+  },
+
+  removeCurrentContainer: function() {
+    if (!_.isUndefined(this.currentContainer)) {
+      this.currentContainer.removeClass("with-st-controls");
+      this.currentContainer = undefined;
+    }
+  }
+});
+
+module.exports = BlockControls;

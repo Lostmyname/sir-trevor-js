@@ -25,7 +25,7 @@ Full documentation can be found [here](http://madebymany.github.io/sir-trevor-js
 5. [Laravel](https://github.com/caouecs/Laravel4-SirTrevorJS)
 6. [Django](https://github.com/philippbosch/django-sirtrevor)
 7. [Yii Framework](https://github.com/DrMabuse23/yii2-sir-trevor-js)
-
+8. [Symfony2](https://github.com/EDSI-Tech/SirTrevorBundle)
 
 ## Custom blocks
 
@@ -40,9 +40,14 @@ Sir Trevor is only tested on the following modern browsers:
 - Safari 5+
 - Firefox 16+
 
+ECMAScript 6 shims are bundled in by default; if the platform you wish to run on doesn't support ECMAScript 5 APIs you'll need to shim those yourself.
+
 ## Dependencies
 
-Sir Trevor requires [Underscore](http://underscorejs.org/) (or LoDash), [jQuery](http://jquery.com) (or Zepto) and [Eventable](https://github.com/madebymany/eventable).
+It's up to you:
+
+* Bring your own jQuery or Zepto (and have it put itself on `window.$`) and use `sir-trevor.js` / `sir-trevor.min.js`
+* Or if you're using Browserify yourself, `npm install sir-trevor` and `require('sir-trevor')` it as you would expect.
 
 ## Contributing
 
@@ -58,23 +63,23 @@ Block Types can also easily be added to the ``SirTrevor.Blocks`` object. You can
 
 ### Compiling
 
-We use the awesome [Grunt](http://gruntjs.com/) for our build process. Before getting started please be sure to install the necessary dependencies via npm:
+Before getting started please be sure to install the necessary dependencies via npm:
 
 ``$ npm install``
 
-Make sure install the dependecies of bower. As you need jQuery, Eventable and Underscore while you are testing with Jasmine:
+When completed, we have a couple of preset scripts:
 
-``$ bower install``
+``$ npm run dev``
 
-When completed you'll be able to run the various grunt commands provided:
+This compiles for development, and watches source files to recompile when you change something.
 
-``$ grunt``
+``$ npm test``
+
+Runs the linter and test suite, just like the CI server does.
+
+``$ npm run dist``
 
 Concatenates scripts, compiles the Sass, runs the Jasmine tests and minifies the project.
-
-``$ grunt watch``
-
-Convenience method while developing to compile the Sass files and concatenate the Javascript on save of a file in the ``/src`` directory.
 
 Please ensure any pull requests have relevant Jasmine tests (where applicable).
 

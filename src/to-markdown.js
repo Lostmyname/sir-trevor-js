@@ -1,5 +1,15 @@
-SirTrevor.toMarkdown = function(content, type) {
-  type = _.classify(type);
+"use strict";
+
+var _ = require('./lodash');
+var utils = require('./utils');
+
+module.exports = function(content, type) {
+
+  // Deferring requiring these to sidestep a circular dependency:
+  // Block -> this -> Blocks -> Block
+  var Blocks = require('./blocks');
+
+  type = utils.classify(type);
 
   var markdown = content;
 
@@ -59,18 +69,6 @@ SirTrevor.toMarkdown = function(content, type) {
                       .replace(/<i>(?:\s*)(.*?)(\s*)?<\/i>/gim, replaceItalics);
 
 
-  // Use custom formatters toMarkdown functions (if any exist)
-  var formatName, format;
-  for(formatName in SirTrevor.Formatters) {
-    if (SirTrevor.Formatters.hasOwnProperty(formatName)) {
-      format = SirTrevor.Formatters[formatName];
-      // Do we have a toMarkdown function?
-      if (!_.isUndefined(format.toMarkdown) && _.isFunction(format.toMarkdown)) {
-        markdown = format.toMarkdown(markdown);
-      }
-    }
-  }
-
   // Do our generic stripping out
   markdown = markdown.replace(/([^<>]+)(<div>)/g,"$1\n$2")                                 // Divitis style line breaks (handle the first line)
                  .replace(/<div><div>/g,'\n<div>')                                         // ^ (double opening divs with one close from Chrome)
@@ -82,8 +80,8 @@ SirTrevor.toMarkdown = function(content, type) {
 
   // Use custom block toMarkdown functions (if any exist)
   var block;
-  if (SirTrevor.Blocks.hasOwnProperty(type)) {
-    block = SirTrevor.Blocks[type];
+  if (Blocks.hasOwnProperty(type)) {
+    block = Blocks[type];
     // Do we have a toMarkdown function?
     if (!_.isUndefined(block.prototype.toMarkdown) && _.isFunction(block.prototype.toMarkdown)) {
       markdown = block.prototype.toMarkdown(markdown);
@@ -91,11 +89,7 @@ SirTrevor.toMarkdown = function(content, type) {
   }
 
   // Strip remaining HTML
-  if (SirTrevor.DEFAULTS.toMarkdown.aggresiveHTMLStrip) {
-    markdown = markdown.replace(/<\/?[^>]+(>|$)/g, "");
-  } else {
-    markdown = markdown.replace(/<(?=\S)\/?[^>]+(>|$)/ig, "");
-  }
+  markdown = markdown.replace(/<\/?[^>]+(>|$)/g, "");
 
   return markdown;
 };

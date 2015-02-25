@@ -1,4 +1,8 @@
-SirTrevor.BlockMixins.Ajaxable = {
+"use strict";
+
+var utils = require('../utils');
+
+module.exports = {
 
   mixinName: "Ajaxable",
 
@@ -9,17 +13,17 @@ SirTrevor.BlockMixins.Ajaxable = {
   },
 
   addQueuedItem: function(name, deferred) {
-    SirTrevor.log("Adding queued item for " + this.blockID + " called " + name);
-    SirTrevor.EventBus.trigger("onUploadStart", this.blockID);
+    utils.log("Adding queued item for " + this.blockID + " called " + name);
 
     this._queued.push({ name: name, deferred: deferred });
   },
 
   removeQueuedItem: function(name) {
-    SirTrevor.log("Removing queued item for " + this.blockID + " called " + name);
-    SirTrevor.EventBus.trigger("onUploadStop", this.blockID);
+    utils.log("Removing queued item for " + this.blockID + " called " + name);
 
-    this._queued = _.reject(this._queued, function(queued){ return queued.name == name; });
+    this._queued = this._queued.filter(function(queued) {
+      return queued.name !== name;
+    });
   },
 
   hasItemsInQueue: function() {
@@ -27,8 +31,8 @@ SirTrevor.BlockMixins.Ajaxable = {
   },
 
   resolveAllInQueue: function() {
-    _.each(this._queued, function(item){
-      SirTrevor.log("Aborting queued request: " + item.name);
+    this._queued.forEach(function(item){
+      utils.log("Aborting queued request: " + item.name);
       item.deferred.abort();
     }, this);
   }

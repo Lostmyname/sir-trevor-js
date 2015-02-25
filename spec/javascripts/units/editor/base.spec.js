@@ -1,3 +1,5 @@
+"use strict";
+
 describe("Editor", function(){
 
   var element, editor;
@@ -10,11 +12,12 @@ describe("Editor", function(){
   describe("instantiating without an element", function(){
 
     beforeEach(function(){
+      SirTrevor.config.instances = [];
       editor = new SirTrevor.Editor();
     });
 
     it("won't create an instance", function(){
-      expect(SirTrevor.instances.length).toBe(0);
+      expect(SirTrevor.config.instances.length).toBe(0);
     });
 
   });
@@ -22,11 +25,12 @@ describe("Editor", function(){
   describe("instantiating with an element", function(){
 
     beforeEach(function(){
+      SirTrevor.config.instances = [];
       editor = new SirTrevor.Editor({ el: element });
     });
 
     it("creates an instance", function(){
-      expect(SirTrevor.instances.length).toBe(1);
+      expect(SirTrevor.config.instances.length).toBe(1);
     });
 
   });
@@ -76,7 +80,7 @@ describe("Editor", function(){
     beforeEach(function(){
       editor = new SirTrevor.Editor({ el: element });
 
-      editor.blocks = [
+      editor.block_manager.blocks = [
         { blockID: 1 },
         { blockID: 2 }
       ];
@@ -97,7 +101,7 @@ describe("Editor", function(){
     beforeEach(function(){
       editor = new SirTrevor.Editor({ el: element });
 
-      editor.blocks = [
+      editor.block_manager.blocks = [
         { type: "Text" },
         { type: "Image" }
       ];
@@ -113,7 +117,7 @@ describe("Editor", function(){
     beforeEach(function(){
       editor = new SirTrevor.Editor({ el: element });
 
-      editor.blocks = [
+      editor.block_manager.blocks = [
         { blockID: 1 },
         { blockID: 2 }
       ];
@@ -121,17 +125,6 @@ describe("Editor", function(){
 
     it("returns all the blocks of the type", function(){
       expect(editor.getBlocksByIDs([1]).length).toBe(1);
-    });
-  });
-
-  describe("Internationalization", function(){
-    beforeEach(function(){
-      editor = new SirTrevor.Editor({ el: element, required: ['Text'] });
-    });
-
-    it("correctly sets the English text as default", function(){
-        editor.validateBlockTypesExist(true);
-        expect(editor.errors).toEqual([{text: "You must have a block of type Text"}]);
     });
   });
 });

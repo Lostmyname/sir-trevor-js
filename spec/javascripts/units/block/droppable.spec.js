@@ -1,4 +1,6 @@
-describe("Droppable Block", function(){
+"use strict";
+
+describe("Block:Droppable Block", function(){
 
   var element, editor, block;
 
@@ -10,13 +12,13 @@ describe("Droppable Block", function(){
       droppable: true
     });
 
-    block = new SirTrevor.Blocks.DroppableBlock({}, editor.ID);
+    block = new SirTrevor.Blocks.DroppableBlock({}, editor.ID, editor.mediator);
   });
 
   describe("render", function(){
 
     beforeEach(function(){
-      spyOn(block, 'withMixin').andCallThrough();
+      spyOn(block, 'withMixin').and.callThrough();
       block = block.render();
     });
 

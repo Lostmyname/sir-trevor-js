@@ -1,11 +1,19 @@
-SirTrevor.BlockMixins.Pastable = {
+"use strict";
+
+var _ = require('../lodash');
+var $ = require('jquery');
+var config = require('../config');
+var utils = require('../utils');
+
+module.exports = {
 
   mixinName: "Pastable",
 
   initializePastable: function() {
-    SirTrevor.log("Adding pastable to block " + this.blockID);
+    utils.log("Adding pastable to block " + this.blockID);
 
-    this.paste_options = _.extend({}, SirTrevor.DEFAULTS.Block.paste_options, this.paste_options);
+    this.paste_options = Object.assign(
+      {}, config.defaults.Block.paste_options, this.paste_options);
     this.$inputs.append(_.template(this.paste_options.html, this));
 
     this.$('.st-paste-block')
